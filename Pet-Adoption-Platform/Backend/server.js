@@ -16,9 +16,15 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 connectDB();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://petadoption-five.vercel.app"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
 
