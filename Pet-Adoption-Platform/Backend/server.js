@@ -7,6 +7,7 @@ const connectDB = require("./db");
 
 const petRoutes = require("./routes/petRoutes");
 const adoptionRoutes = require("./routes/adoptionRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express(); // ✅ Create app first
 
@@ -33,6 +34,7 @@ app.use(express.json());
 // Routes
 app.use("/api/pets", petRoutes);
 app.use("/api/adoptions", adoptionRoutes);
+app.use("/api/auth", authRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
