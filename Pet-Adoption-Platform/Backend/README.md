@@ -1,75 +1,128 @@
-# React + TypeScript + Vite
+# 🐾 Pet Adoption Platform - Backend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+REST API built with Node.js, Express.js, MongoDB, and Mongoose for the Pet Adoption Platform.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
 
-## React Compiler
+- 🐶 Get All Pets
+- 📄 Get Pet by ID
+- 📝 User Registration
+- 🏡 Adoption APIs
+- 🔒 Password Hashing using bcrypt
+- 🌍 MongoDB Atlas Database
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- bcryptjs
+- dotenv
+- cors
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📂 Folder Structure
 
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+Backend
+│
+├── controllers
+├── db.js
+├── models
+├── routes
+├── server.js
+├── .env
+└── package.json
 ```
+
+---
+
+## ⚙️ Installation
+
+Clone repository
+
+```bash
+git clone <repository-url>
+```
+
+Move to backend
+
+```bash
+cd Backend
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Create a `.env` file
+
+```env
+PORT=5000
+MONGO_URI=YOUR_MONGODB_CONNECTION_STRING
+```
+
+Start the server
+
+```bash
+npm start
+```
+
+or
+
+```bash
+node server.js
+```
+
+---
+
+## 📌 API Endpoints
+
+### Pets
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /api/pets | Get all pets |
+| GET | /api/pets/:id | Get pet details |
+
+---
+
+### Authentication
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | /api/auth/register | Register User |
+
+---
+
+### Adoption
+
+| Method | Endpoint |
+|---------|----------|
+| POST | /api/adoptions |
+
+---
+
+## Database
+
+MongoDB Atlas
+
+Collections
+
+- pets
+- users
+- adoptions
+
+---
+
+## 👨‍💻 Developed By
+
+**Andrew Cemon**
