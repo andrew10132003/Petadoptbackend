@@ -45,15 +45,13 @@ const registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-      address,
-      // New users are automatically "user"
-      // because of the default value in User.js
-    });
-
+       name,
+       email,
+       password: hashedPassword,
+       phone,
+       address,
+       role: "adopter",
+      });
     res.status(201).json({
       message: "Registration Successful",
 
