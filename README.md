@@ -1,75 +1,94 @@
-# React + TypeScript + Vite
+🐾 Pet Adoption Platform - Backend
+Backend API for the Pet Adoption Platform.
+Built using Node.js, Express.js, MongoDB, and JWT authentication.
+🚀 Features
+- 🔐 User Registration
+- 🔑 User Login
+- 🔒 JWT Authentication
+- 👥 Role-based Authentication
+- 🐶 Pet Management
+- 📋 Adoption Applications
+- 👑 Admin Dashboard APIs
+- ✅ Approve Adoption Requests
+- ❌ Reject Adoption Requests
+- 🔐 Protected API Routes
+- 🗄️ MongoDB Database
+- 🔑 Password Hashing with bcrypt
+👥 User Roles
+The application supports four user roles:
+👑 Admin
+Admin can:
+- View all adoption requests
+- Approve adoption requests
+- Reject adoption requests
+- Manage platform-level adoption activities
+🏠 Shelter
+Shelter users can access the platform as shelter users.
+🐕 Adopter
+Adopters can:
+- Browse pets
+- Submit adoption applications
+- View adoption requests
+- Track adoption status
+🧑‍🍼 Foster
+Foster users can access the platform as foster users.
+🔐 Demo Credentials
+🏠 Shelter
+Email: `shelter@example.com`  
+Password: `Shelter@123`  
+Role: `shelter`
+🐕 Adopter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+Email:`adopter@example.com`  
+Password: `Adopter@123`  
+Role: `adopter`
+🧑‍🍼 Foster
+Email: `foster@example.com`  
+Password: `Foster@123`  
+Role: `foster`
+👑 Admin
+Use the existing Admin account created in the database.
+Role: `admin`
+> ⚠️ Demo credentials are provided for project evaluation and testing purposes.
+🛠️ Tech Stack
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcryptjs
+- Axios
+- dotenv
+- CORS
+---
+ 📂 Folder Structure
+text
+Backend
+│
+├── config
+├── controllers
+│   ├── adoptionController.js
+│   ├── adminController.js
+│   ├── authController.js
+│   └── petController.js
+│
+├── middleware
+│   ├── authMiddleware.js
+│   └── adminMiddleware.js
+│
+├── models
+│   ├── Adoption.js
+│   ├── Pet.js
+│   └── User.js
+│
+├── routes
+│   ├── adoptionRoutes.js
+│   ├── adminRoutes.js
+│   ├── authRoutes.js
+│   └── petRoutes.js
+│
+├── db.js
+├── seed.js
+├── server.js
+├── package.json
+└── README.md
