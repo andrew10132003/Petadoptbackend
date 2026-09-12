@@ -41,6 +41,15 @@ const pets = [
     description:
       "Loyal and intelligent companion.",
   },
+  {
+    name: "Shiro",
+    breed: "Great Dane",
+    age: "8 Years",
+    image:
+      "great-dane.jpg",
+    description:
+      "cute and loyal Great Dane.",
+  },
 ];
 
 // =====================================================
