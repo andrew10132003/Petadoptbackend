@@ -5,11 +5,13 @@ const petSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     breed: {
       type: String,
       required: true,
+      trim: true,
     },
 
     age: {
@@ -25,6 +27,13 @@ const petSchema = new mongoose.Schema(
     description: {
       type: String,
       default: "",
+    },
+
+    // Shelter who owns/manages this pet
+    shelterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {

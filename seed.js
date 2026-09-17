@@ -8,11 +8,6 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const Pet = require("./models/Pet");
 const User = require("./models/User");
-
-// =====================================================
-// PET DATA
-// =====================================================
-
 const pets = [
   {
     name: "Buddy",
@@ -45,17 +40,11 @@ const pets = [
     name: "Shiro",
     breed: "Great Dane",
     age: "8 Years",
-    image:
-      "great-dane.jpg",
+    image: "great-dane.jpg",
     description:
-      "cute and loyal Great Dane.",
+      "Cute and loyal Great Dane.",
   },
 ];
-
-// =====================================================
-// DEMO USERS
-// =====================================================
-
 const demoUsers = [
   {
     name: "Demo Shelter",
@@ -82,61 +71,76 @@ const demoUsers = [
     role: "foster",
   },
 ];
+const createDemoUsers = async () => {
+  for (const demoUser of demoUsers) {
+    const existingUser = await User.findOne({
+      email: demoUser.email,
+    });
 
-// =====================================================
-// SEED DATABASE
-// =====================================================
+    if (existingUser) {
+      // Make sure role is correct
+      existingUser.role = demoUser.role;
+      await existingUser.save();
+
+      console.log(
+        `ℹ️ User already exists: ${demoUser.email}`
+      );
+
+      continue;
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      demoUser.password,
+      10
+    );
+
+    await User.create({
+      name: demoUser.name,
+      email: demoUser.email,
+      password: hashedPassword,
+      phone: demoUser.phone,
+      address: demoUser.address,
+      role: demoUser.role,
+    });
+
+    console.log(
+      `✅ Created ${demoUser.role}: ${demoUser.email}`
+    );
+  }
+};
 
 async function seedDB() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
 
     console.log("✅ MongoDB connected");
+    await createDemoUsers();
+    const shelterUser = await User.findOne({
+      email: "shelter@example.com",
+      role: "shelter",
+    });
 
-    // -------------------------------------------------
-    // PETS
-    // -------------------------------------------------
-
-    await Pet.deleteMany();
-
-    await Pet.insertMany(pets);
-
-    console.log("✅ Pets inserted successfully");
-
-    // -------------------------------------------------
-    // DEMO USERS
-    // -------------------------------------------------
-
-    for (const demoUser of demoUsers) {
-      const existingUser = await User.findOne({
-        email: demoUser.email,
-      });
-
-      if (existingUser) {
-        console.log(
-          `ℹ️ User already exists: ${demoUser.email}`
-        );
-        continue;
-      }
-
-      const hashedPassword = await bcrypt.hash(
-        demoUser.password,
-        10
-      );
-
-      await User.create({
-        name: demoUser.name,
-        email: demoUser.email,
-        password: hashedPassword,
-        phone: demoUser.phone,
-        address: demoUser.address,
-        role: demoUser.role,
-      });
-
-      console.log(
-        `✅ Created ${demoUser.role}: ${demoUser.email}`
+    if (!shelterUser) {
+      throw new Error(
+        "Demo Shelter account not found"
       );
     }
+
+    console.log(
+      `✅ Shelter found: ${shelterUser.email}`
+    );
+    await Pet.deleteMany();
+
+    const petsWithShelter = pets.map((pet) => ({
+      ...pet,
+      shelterId: shelterUser._id,
+    }));
+
+    await Pet.insertMany(petsWithShelter);
+
+    console.log(
+      "✅ Pets inserted and assigned to Demo Shelter"
+    );
 
     console.log("=================================");
     console.log("✅ Database seeding completed!");
