@@ -133,44 +133,83 @@ const getMyAdoptions = async (req, res) => {
 // ==========================================
 const cancelAdoption = async (req, res) => {
   try {
-    // Only adopters can cancel their requests
+    // =================================================
+    // ROLE CHECK
+    // =================================================
+
     if (req.user.role !== "adopter") {
       return res.status(403).json({
-        message: "Only adopters can cancel adoption requests",
+        message:
+          "Only adopters can cancel adoption requests.",
       });
     }
 
-    const adoption = await Adoption.findOne({
-      _id: req.params.id,
-      userId: req.user.id,
-    });
+    // =================================================
+    // FIND REQUEST
+    // =================================================
+
+    const adoption =
+      await Adoption.findById(
+        req.params.id
+      );
 
     if (!adoption) {
       return res.status(404).json({
-        message: "Adoption request not found",
+        message:
+          "Adoption request not found.",
       });
     }
 
-    // Only pending requests can be cancelled
-    if (adoption.status !== "pending") {
-      return res.status(400).json({
-        message: `Cannot cancel a ${adoption.status} request`,
+    // =================================================
+    // OWNERSHIP CHECK
+    // =================================================
+
+    if (
+      adoption.userId.toString() !==
+      req.user.id.toString()
+    ) {
+      return res.status(403).json({
+        message:
+          "You can only cancel your own adoption request.",
       });
     }
+
+    // =================================================
+    // STATUS CHECK
+    // =================================================
+
+    if (adoption.status !== "pending") {
+      return res.status(400).json({
+        message:
+          "Only pending adoption requests can be cancelled.",
+      });
+    }
+
+    // =================================================
+    // CANCEL
+    // =================================================
 
     adoption.status = "cancelled";
 
     await adoption.save();
 
-    res.status(200).json({
-      message: "Adoption Request Cancelled Successfully",
+    return res.status(200).json({
+      message:
+        "Adoption request cancelled successfully.",
       adoption,
     });
-  } catch (error) {
-    console.error(error);
 
-    res.status(500).json({
-      message: "Failed to cancel adoption request",
+  } catch (error) {
+
+    console.error(
+      "❌ Cancel Adoption Error:",
+      error
+    );
+
+    return res.status(500).json({
+      message:
+        error.message ||
+        "Failed to cancel adoption request.",
     });
   }
 };
