@@ -1,27 +1,48 @@
-const express = require("express");
 
+const express = require("express");
 const router = express.Router();
 
 const {
   getPets,
   getPetById,
   createPet,
+  updatePet,
   deletePet,
 } = require("../controllers/petController");
 
 const protect = require("../middleware/authMiddleware");
 const admin = require("../middleware/adminMiddleware");
+const upload = require("../middleware/upload");
 
-// Get all pets
+// Public pet browsing
 router.get("/", getPets);
-
-// Get single pet
 router.get("/:id", getPetById);
 
-// Admin: create pet
-router.post("/", protect, admin, createPet);
+// Create a pet with file uploads
+router.post(
+  "/",
+  protect,
+  upload.fields([
+    { name: "photos", maxCount: 10 },
+    { name: "videos", maxCount: 3 },
+    { name: "medicalReport", maxCount: 1 },
+  ]),
+  createPet
+);
 
-// Admin: delete pet
-router.delete("/:id", protect, admin, deletePet);
+// Update a pet with file uploads
+router.put(
+  "/:id",
+  protect,
+  upload.fields([
+    { name: "photos", maxCount: 10 },
+    { name: "videos", maxCount: 3 },
+    { name: "medicalReport", maxCount: 1 },
+  ]),
+  updatePet
+);
+
+// Delete a pet
+router.delete("/:id", protect, deletePet);
 
 module.exports = router;

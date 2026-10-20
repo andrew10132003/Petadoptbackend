@@ -1,3 +1,4 @@
+
 const Adoption = require("../models/Adoption");
 const Pet = require("../models/Pet");
 
@@ -6,9 +7,6 @@ const Pet = require("../models/Pet");
 // ==========================================
 const createAdoption = async (req, res) => {
   try {
-    console.log("User:", req.user);
-    console.log("Body:", req.body);
-
     // Only adopters can submit adoption requests
     if (req.user.role !== "adopter") {
       return res.status(403).json({
@@ -18,7 +16,6 @@ const createAdoption = async (req, res) => {
 
     const {
       petId,
-      petName,
       email,
       phone,
       address,
@@ -28,7 +25,6 @@ const createAdoption = async (req, res) => {
 
     if (
       !petId ||
-      !petName ||
       !email ||
       !phone ||
       !address ||
@@ -49,14 +45,21 @@ const createAdoption = async (req, res) => {
       });
     }
 
-    // Make sure the pet belongs to a shelter
+    // Pet must belong to a shelter
     if (!pet.shelterId) {
       return res.status(400).json({
         message: "This pet is not assigned to a shelter",
       });
     }
 
-    // Prevent duplicate pending request
+    // Do not accept applications for adopted pets
+    if (pet.listingStatus === "adopted") {
+      return res.status(409).json({
+        message: "This pet has already been adopted",
+      });
+    }
+
+    // Prevent duplicate pending requests from the same adopter
     const existingRequest = await Adoption.findOne({
       userId: req.user.id,
       petId: pet._id,
@@ -65,7 +68,8 @@ const createAdoption = async (req, res) => {
 
     if (existingRequest) {
       return res.status(400).json({
-        message: "You already have a pending adoption request for this pet",
+        message:
+          "You already have a pending adoption request for this pet",
       });
     }
 
@@ -82,17 +86,15 @@ const createAdoption = async (req, res) => {
       status: "pending",
     });
 
-    console.log("Saved:", adoption);
-
-    res.status(201).json({
+    return res.status(201).json({
       message: "Adoption Request Submitted Successfully",
       adoption,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Create adoption error:", error);
 
-    res.status(500).json({
-      message: error.message,
+    return res.status(500).json({
+      message: "Failed to create adoption request",
     });
   }
 };
@@ -102,7 +104,6 @@ const createAdoption = async (req, res) => {
 // ==========================================
 const getMyAdoptions = async (req, res) => {
   try {
-    // Only adopters should access their adoption requests
     if (req.user.role !== "adopter") {
       return res.status(403).json({
         message: "Only adopters can view their adoption requests",
@@ -116,13 +117,13 @@ const getMyAdoptions = async (req, res) => {
       .populate("shelterId", "name email phone")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       adoptions,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get my adoptions error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch adoption requests",
     });
   }
@@ -133,83 +134,50 @@ const getMyAdoptions = async (req, res) => {
 // ==========================================
 const cancelAdoption = async (req, res) => {
   try {
-    // =================================================
-    // ROLE CHECK
-    // =================================================
-
     if (req.user.role !== "adopter") {
       return res.status(403).json({
-        message:
-          "Only adopters can cancel adoption requests.",
+        message: "Only adopters can cancel adoption requests",
       });
     }
 
-    // =================================================
-    // FIND REQUEST
-    // =================================================
-
-    const adoption =
-      await Adoption.findById(
-        req.params.id
-      );
+    const adoption = await Adoption.findById(req.params.id);
 
     if (!adoption) {
       return res.status(404).json({
-        message:
-          "Adoption request not found.",
+        message: "Adoption request not found",
       });
     }
 
-    // =================================================
-    // OWNERSHIP CHECK
-    // =================================================
-
+    // Only the owner of the request can cancel it
     if (
       adoption.userId.toString() !==
       req.user.id.toString()
     ) {
       return res.status(403).json({
         message:
-          "You can only cancel your own adoption request.",
+          "You can only cancel your own adoption request",
       });
     }
-
-    // =================================================
-    // STATUS CHECK
-    // =================================================
 
     if (adoption.status !== "pending") {
       return res.status(400).json({
         message:
-          "Only pending adoption requests can be cancelled.",
+          "Only pending adoption requests can be cancelled",
       });
     }
 
-    // =================================================
-    // CANCEL
-    // =================================================
-
     adoption.status = "cancelled";
-
     await adoption.save();
 
     return res.status(200).json({
-      message:
-        "Adoption request cancelled successfully.",
+      message: "Adoption request cancelled successfully",
       adoption,
     });
-
   } catch (error) {
-
-    console.error(
-      "❌ Cancel Adoption Error:",
-      error
-    );
+    console.error("Cancel adoption error:", error);
 
     return res.status(500).json({
-      message:
-        error.message ||
-        "Failed to cancel adoption request.",
+      message: "Failed to cancel adoption request",
     });
   }
 };
@@ -219,7 +187,6 @@ const cancelAdoption = async (req, res) => {
 // ==========================================
 const getAllAdoptions = async (req, res) => {
   try {
-    // Only admin can view ALL adoption requests
     if (req.user.role !== "admin") {
       return res.status(403).json({
         message: "Only admins can view all adoption requests",
@@ -232,13 +199,13 @@ const getAllAdoptions = async (req, res) => {
       .populate("shelterId", "name email phone")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       adoptions,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get all adoptions error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch adoption requests",
     });
   }
@@ -249,7 +216,6 @@ const getAllAdoptions = async (req, res) => {
 // ==========================================
 const getShelterAdoptions = async (req, res) => {
   try {
-    // Only shelters can access shelter requests
     if (req.user.role !== "shelter") {
       return res.status(403).json({
         message: "Only shelters can view shelter adoption requests",
@@ -263,13 +229,13 @@ const getShelterAdoptions = async (req, res) => {
       .populate("petId", "name breed age image")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       adoptions,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get shelter adoptions error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch shelter adoption requests",
     });
   }
@@ -280,13 +246,13 @@ const getShelterAdoptions = async (req, res) => {
 // ==========================================
 const approveAdoption = async (req, res) => {
   try {
-    // Only shelters can approve adoption requests
     if (req.user.role !== "shelter") {
       return res.status(403).json({
         message: "Only shelters can approve adoption requests",
       });
     }
 
+    // Find a request belonging to this shelter
     const adoption = await Adoption.findOne({
       _id: req.params.id,
       shelterId: req.user.id,
@@ -298,25 +264,70 @@ const approveAdoption = async (req, res) => {
       });
     }
 
-    // Only pending requests can be approved
     if (adoption.status !== "pending") {
       return res.status(400).json({
         message: `Cannot approve a ${adoption.status} request`,
       });
     }
 
+    // Find the associated pet
+    const pet = await Pet.findById(adoption.petId);
+
+    if (!pet) {
+      return res.status(404).json({
+        message: "Pet not found",
+      });
+    }
+
+    // Do not approve if already adopted
+    if (pet.listingStatus === "adopted") {
+      return res.status(409).json({
+        message: "This pet has already been adopted",
+      });
+    }
+
+    // Check for another approved request
+    const alreadyApproved = await Adoption.findOne({
+      petId: pet._id,
+      status: "approved",
+      _id: { $ne: adoption._id },
+    });
+
+    if (alreadyApproved) {
+      return res.status(409).json({
+        message:
+          "Another adoption request has already been approved",
+      });
+    }
+
+    // Update the adoption request and pet listing
     adoption.status = "approved";
+    pet.listingStatus = "adopted";
 
     await adoption.save();
+    await pet.save();
 
-    res.status(200).json({
-      message: "Adoption Request Approved Successfully",
+    // Reject remaining pending requests for this pet
+    await Adoption.updateMany(
+      {
+        petId: pet._id,
+        _id: { $ne: adoption._id },
+        status: "pending",
+      },
+      {
+        $set: { status: "rejected" },
+      }
+    );
+
+    return res.status(200).json({
+      message: "Adoption request approved successfully",
       adoption,
+      pet,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Approve adoption error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to approve adoption request",
     });
   }
@@ -327,7 +338,6 @@ const approveAdoption = async (req, res) => {
 // ==========================================
 const rejectAdoption = async (req, res) => {
   try {
-    // Only shelters can reject adoption requests
     if (req.user.role !== "shelter") {
       return res.status(403).json({
         message: "Only shelters can reject adoption requests",
@@ -345,7 +355,6 @@ const rejectAdoption = async (req, res) => {
       });
     }
 
-    // Only pending requests can be rejected
     if (adoption.status !== "pending") {
       return res.status(400).json({
         message: `Cannot reject a ${adoption.status} request`,
@@ -353,17 +362,16 @@ const rejectAdoption = async (req, res) => {
     }
 
     adoption.status = "rejected";
-
     await adoption.save();
 
-    res.status(200).json({
-      message: "Adoption Request Rejected Successfully",
+    return res.status(200).json({
+      message: "Adoption request rejected successfully",
       adoption,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Reject adoption error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to reject adoption request",
     });
   }
