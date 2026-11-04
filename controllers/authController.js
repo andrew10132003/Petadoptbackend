@@ -1,34 +1,36 @@
+
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { sendEmail } = require("../service/emailService");
+
+// Safely escape user-provided text before inserting into HTML
+const escapeHtml = (value) =>
+  String(value).replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+
+    return entities[character];
+  });
 
 // ===============================
 // Register User
 // ===============================
 const registerUser = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      password,
-      phone,
-      address,
-    } = req.body;
+    const { name, email, password, phone, address } = req.body;
 
-    // Validate fields
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !phone ||
-      !address
-    ) {
+    if (!name || !email || !password || !phone || !address) {
       return res.status(400).json({
         message: "Please fill all fields",
       });
     }
 
-    // Check existing user
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -37,24 +39,50 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
-       name,
-       email,
-       password: hashedPassword,
-       phone,
-       address,
-       role: "adopter",
-      });
-    res.status(201).json({
-      message: "Registration Successful",
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      role: "adopter",
+    });
 
+    // Welcome email
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Welcome to Pet Adoption Platform!",
+        text: `Hello ${user.name},
+
+Welcome to Pet Adoption Platform!
+
+Your account has been successfully registered.
+
+Thank you for joining us!
+
+Pet Adoption Platform Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #2e7d32;">Welcome to Pet Adoption Platform!</h2>
+            <p>Hello ${escapeHtml(user.name)},</p>
+            <p>Your account has been successfully registered.</p>
+            <p>You can now explore available pets and begin your adoption journey.</p>
+            <p>Thank you for joining us!</p>
+            <p>Regards,<br /><strong>Pet Adoption Platform Team</strong></p>
+          </div>
+        `,
+      });
+
+      console.log("Welcome email sent successfully:", user.email);
+    } catch (emailError) {
+      console.error("Welcome email failed:", emailError.message);
+    }
+
+    return res.status(201).json({
+      message: "Registration Successful",
       user: {
         id: user._id,
         name: user.name,
@@ -65,7 +93,7 @@ const registerUser = async (req, res) => {
   } catch (error) {
     console.error("Register Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server Error",
     });
   }
@@ -76,19 +104,14 @@ const registerUser = async (req, res) => {
 // ===============================
 const loginUser = async (req, res) => {
   try {
-    const {
-      email,
-      password,
-    } = req.body;
+    const { email, password } = req.body;
 
-    // Validate fields
     if (!email || !password) {
       return res.status(400).json({
         message: "Please fill all fields",
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -97,11 +120,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -109,7 +128,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Create JWT
     const token = jwt.sign(
       {
         id: user._id,
@@ -121,12 +139,38 @@ const loginUser = async (req, res) => {
       }
     );
 
-    // Send response
-    res.status(200).json({
+    // Login notification email
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Successful Login - Pet Adoption Platform",
+        text: `Hello ${user.name},
+
+You have successfully logged in to your Pet Adoption Platform account.
+
+If this wasn't you, please secure your account.
+
+Regards,
+Pet Adoption Platform Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #2e7d32;">Successful Login</h2>
+            <p>Hello ${escapeHtml(user.name)},</p>
+            <p>You have successfully logged in to your Pet Adoption Platform account.</p>
+            <p>If this wasn't you, please secure your account.</p>
+            <p>Regards,<br /><strong>Pet Adoption Platform Team</strong></p>
+          </div>
+        `,
+      });
+
+      console.log("Login notification email sent:", user.email);
+    } catch (emailError) {
+      console.error("Login notification email failed:", emailError.message);
+    }
+
+    return res.status(200).json({
       message: "Login Successful",
-
       token,
-
       user: {
         id: user._id,
         name: user.name,
@@ -137,7 +181,7 @@ const loginUser = async (req, res) => {
   } catch (error) {
     console.error("Login Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server Error",
     });
   }

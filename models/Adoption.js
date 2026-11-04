@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const adoptionSchema = new mongoose.Schema(
@@ -30,7 +31,7 @@ const adoptionSchema = new mongoose.Schema(
 
     email: {
       type: String,
-      required: true,
+      required: true, 
     },
 
     phone: {
@@ -53,10 +54,66 @@ const adoptionSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Existing adoption application status
     status: {
       type: String,
       enum: ["pending", "cancelled", "approved", "rejected"],
       default: "pending",
+    },
+
+    // Additional information requested by the shelter
+    informationRequests: [
+      {
+        message: {
+          type: String,
+          required: true,
+        },
+
+        response: {
+          type: String,
+          default: "",
+        },
+
+        requestedAt: {
+          type: Date,
+          default: Date.now,
+        },
+
+        respondedAt: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
+
+    // Meet-and-greet scheduling
+    meetAndGreet: {
+      scheduledAt: {
+        type: Date,
+        default: null,
+      },
+
+      location: {
+        type: String,
+        default: "",
+      },
+
+      notes: {
+        type: String,
+        default: "",
+      },
+
+      status: {
+        type: String,
+        enum: [
+          "not-scheduled",
+          "proposed",
+          "confirmed",
+          "completed",
+          "cancelled",
+        ],
+        default: "not-scheduled",
+      },
     },
   },
   {
