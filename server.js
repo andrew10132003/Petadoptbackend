@@ -13,6 +13,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const fosterRoutes = require("./routes/fosterRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/fosters", fosterRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
