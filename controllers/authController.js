@@ -23,15 +23,29 @@ const escapeHtml = (value) =>
 // ===============================
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    const { name, email, password, phone, address } = req.body || {};
+    const cleanName = typeof name === "string" ? name.trim() : "";
+    const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const cleanPhone = typeof phone === "string" ? phone.trim() : "";
+    const cleanAddress = typeof address === "string" ? address.trim() : "";
 
-    if (!name || !email || !password || !phone || !address) {
-      return res.status(400).json({
-        message: "Please fill all fields",
-      });
+    if (!cleanName || cleanName.length < 2 || cleanName.length > 80) {
+      return res.status(400).json({ message: "Name must contain 2 to 80 characters." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+      return res.status(400).json({ message: "Please provide a valid email address." });
+    }
+    if (typeof password !== "string" || password.length < 8 || password.length > 128) {
+      return res.status(400).json({ message: "Password must contain 8 to 128 characters." });
+    }
+    if (!/^[+\d][\d\s()-]{7,19}$/.test(cleanPhone)) {
+      return res.status(400).json({ message: "Please provide a valid phone number." });
+    }
+    if (cleanAddress.length < 5 || cleanAddress.length > 300) {
+      return res.status(400).json({ message: "Address must contain 5 to 300 characters." });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: cleanEmail });
 
     if (existingUser) {
       return res.status(400).json({
@@ -42,11 +56,11 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      name,
-      email,
+      name: cleanName,
+      email: cleanEmail,
       password: hashedPassword,
-      phone,
-      address,
+      phone: cleanPhone,
+      address: cleanAddress,
       role: "adopter",
     });
 
@@ -104,15 +118,16 @@ Pet Adoption Platform Team`,
 // ===============================
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+    const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!email || !password) {
+    if (!cleanEmail || typeof password !== "string" || !password) {
       return res.status(400).json({
         message: "Please fill all fields",
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
       return res.status(400).json({
